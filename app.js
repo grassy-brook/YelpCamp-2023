@@ -1,13 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
-const { campgroundSchema } = require('./schemas');
-const port = 3000;
+const { campgroundSchema, reviewSchema } = require('./schemas');
 const path = require('path');
 const Campground = require('./models/campground');
-const methoadOverride = require('method-override');
+const methodOverride = require('method-override');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/expressError');
+const Review = require('./models/review');
 
 // MongoDB接続
 mongoose.set("strictQuery", true);
@@ -36,11 +36,21 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({extended: true}));
-app.use(methoadOverride('_method'));
+app.use(methodOverride('_method'));
 
 // エラーの場合、カスタムエラーハンドラーに飛ぶ
 const validateCampground = (req, res, next) => {
   const { error } = campgroundSchema.validate(req.body);
+  if(error) {
+    const msg = error.details.map(detail => detail.message).join(',');
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+}
+
+const validateReview = (req, res, next) => {
+  const { error } = reviewSchema.validate(req.body);
   if(error) {
     const msg = error.details.map(detail => detail.message).join(',');
     throw new ExpressError(msg, 400);
@@ -67,7 +77,7 @@ app.get('/campgrounds/new', (req, res) => {
 
 // 詳細画面表示
 app.get('/campgrounds/:id', catchAsync(async(req, res) => {
-  const campground = await Campground.findById(req.params.id);
+  const campground = await Campground.findById(req.params.id).populate('reviews');
   res.render('campgrounds/show', { campground });
 }));
 
@@ -99,6 +109,24 @@ app.delete('/campgrounds/:id',  catchAsync(async(req, res) => {
   res.redirect('/campgrounds');
 }));
 
+// レビュー投稿
+app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) => {
+  const campground = await Campground.findById(req.params.id);
+  const review = new Review(req.body.review);
+  campground.reviews.push(review);
+  await review.save();
+  await campground.save();
+  res.redirect(`/campgrounds/${campground.id}`);
+}));
+
+// レビューの削除
+app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async(req, res) => {
+  const { id, reviewId } = req.params;
+  await Campground.findByIdAndUpdate(id, {$pull: {review: reviewId}})
+  await Review.findByIdAndDelete(reviewId);
+  res.redirect(`/campgrounds/${id}`);
+}));
+
 // カスタムエラーハンドラー
 app.all('*', (req, res, next) => {
   next(new ExpressError('ページが見つかりませんでした', 404));
@@ -112,6 +140,6 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render('error', { err });
 });
 
-app.listen(port, (req, res) => {
-  console.log(`Listen: ${port}`);
+app.listen(3000, (req, res) => {
+  console.log('Connecting Port:3000');
 });
