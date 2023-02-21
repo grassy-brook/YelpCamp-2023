@@ -3,12 +3,18 @@ const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const path = require('path');
 const methodOverride = require('method-override');
-const ExpressError = require('./utils/expressError');
 const session = require('express-session');
 const flash = require('connect-flash');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+
+const ExpressError = require('./utils/expressError');
 
 const campgroundRoute = require('./routes/campgrounds');
 const reviewRoute = require('./routes/reviews');
+const userRoute = require('./routes/users');
+
+const User = require('./models/user');
 
 // MongoDB接続
 mongoose.set("strictQuery", true);
@@ -50,15 +56,25 @@ const sessionConfig = {
   }
 };
 app.use(session(sessionConfig));
+
+//認証認可
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use(flash());
+
 app.use((req, res, next) => {
+  // console.log(req.session);
+  res.locals.currentUser = req.user;
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   next();
 });
 
-// エラーの場合、カスタムエラーハンドラーに飛ぶ
-
+app.use('/', userRoute);
 app.use('/campgrounds', campgroundRoute);
 app.use('/campgrounds/:id/reviews', reviewRoute);
 
@@ -67,6 +83,11 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
+app.get('/fakeUser', async (req, res) => {
+  const user = new User({email: 'hogehoge@www.com', username: 'hogehoge'});
+  const newUser = await User.register(user, 'mogemoge');
+  res.send(newUser);
+})
 // カスタムエラーハンドラー
 app.all('*', (req, res, next) => {
   next(new ExpressError('ページが見つかりませんでした', 404));
