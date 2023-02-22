@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
@@ -83,11 +87,11 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
-app.get('/fakeUser', async (req, res) => {
-  const user = new User({email: 'hogehoge@www.com', username: 'hogehoge'});
-  const newUser = await User.register(user, 'mogemoge');
-  res.send(newUser);
-})
+// app.get('/fakeUser', async (req, res) => {
+//   const user = new User({email: 'hogehoge@www.com', username: 'hogehoge'});
+//   const newUser = await User.register(user, 'mogemoge');
+//   res.send(newUser);
+// })
 // カスタムエラーハンドラー
 app.all('*', (req, res, next) => {
   next(new ExpressError('ページが見つかりませんでした', 404));

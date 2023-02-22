@@ -31,9 +31,18 @@ const seedDB = async() => {
       author: '63f4d187e6585e7148779039',
       location: `${cities[randomCityIndex].prefecture} ${cities[randomCityIndex].city}`,
       title: `${sample(descriptors)}・${sample(places)}`,
-      image: 'https://source.unsplash.com/collection/ydmt8IFH4Ac',
       description: '木曾路はすべて山の中である。あるところは岨づたいに行く崖の道であり、あるところは数十間の深さに臨む木曾川の岸であり、あるところは山の尾をめぐる谷の入り口である。一筋の街道はこの深い森林地帯を貫いていた。東ざかいの桜沢から、西の十曲峠まで、木曾十一宿はこの街道に添うて、二十二里余にわたる長い谿谷の間に散在していた。道路の位置も幾たびか改まったもので、古道はいつのまにか深い山間に埋もれた。',
-      price
+      price,
+      images: [
+        {
+          url: 'https://res.cloudinary.com/dn7pelph3/image/upload/v1677054023/YelpCamp/d9czm8pzeckblcx0hgwq.jpg',
+          filename: 'YelpCamp/d9czm8pzeckblcx0hgwq'
+        },
+        {
+          url: 'https://res.cloudinary.com/dn7pelph3/image/upload/v1677054023/YelpCamp/uzwkajrozpwslxikenfj.jpg',
+          filename: 'YelpCamp/uzwkajrozpwslxikenfj'
+        }
+      ]
     });
     await camp.save();
   }
