@@ -3,27 +3,21 @@ const router = express.Router();
 const passport = require("passport");
 const users = require("../controllers/users");
 
-// Create Form
-router.get("/register", users.renderRegister);
+router.route('/register')
+  // Create Form
+  .get(users.renderRegister)
+  // Create
+  .post(users.register)
 
-// Create
-router.post("/register", users.register);
+router.route('/login')
+  // Login Form
+  .get(users.renderLogin)
+  // Login
+  .post(
+    passport.authenticate('local', { failureFlash: true, failureRedirect: '/login', keepSessionInfo: true}), users.login
+  );
 
-// Login Form
-router.get("/login", users.renderLogin);
-
-// ログイン処理
-router.post(
-  '/login',
-  passport.authenticate("local", {
-    failureFlash: true,
-    failureRedirect: "/login",
-    keepSessionInfo: true,
-  }),
-  users.login
-);
-
-// ログアウト処理
+// Logout
 router.get("/logout", users.logout);
 
 module.exports = router;
