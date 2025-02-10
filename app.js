@@ -11,14 +11,13 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
-
 const ExpressError = require('./utils/expressError');
+const User = require('./models/user');
 
 const campgroundRoute = require('./routes/campgrounds');
 const reviewRoute = require('./routes/reviews');
 const userRoute = require('./routes/users');
 
-const User = require('./models/user');
 
 // MongoDB接続
 mongoose.set("strictQuery", true);
@@ -87,11 +86,6 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
-// app.get('/fakeUser', async (req, res) => {
-//   const user = new User({email: 'hogehoge@www.com', username: 'hogehoge'});
-//   const newUser = await User.register(user, 'mogemoge');
-//   res.send(newUser);
-// })
 // カスタムエラーハンドラー
 app.all('*', (req, res, next) => {
   next(new ExpressError('ページが見つかりませんでした', 404));
