@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router({ mergeParams: true });
 
-const { isLoggedIn, validateReview, isReviewAuthor } = require('../middleware');
-const catchAsync = require('../utils/catchAsync');
-const reviews = require('../controllers/reviews');
+import { isLoggedIn, isReviewAuthor } from '../middleware.js';
+import catchAsync from '../utils/catchAsync.js';
+import reviews from '../controllers/reviews.controller.js';
 
 // Create
 router.post('/', isLoggedIn, validateReview, catchAsync(reviews.createReview));
